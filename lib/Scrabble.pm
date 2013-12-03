@@ -27,20 +27,23 @@ sub filter_length
 {
     my $self = shift;
     my @words = @_;
-    return @words unless defined( $self->{length} ) && ! $self->{length} =~ /\D/;
     my $mode = $self->{mode} || '=';
+    my $length =  $self->{length};
+    return @words unless defined( $length );
+    return @words unless $length =~ /^\d$/;
+    warn "mode: $mode";
 
-    if ( $mode eq '>' )
+    if ( $mode eq '>=' )
     {
-        return grep length( $_ ) > $self->{length}, @words;
+        return grep length( $_ ) >= $length, @words;
     }
-    elsif ( $mode eq '<' )
+    elsif ( $mode eq '<=' )
     {
-        return grep length( $_ ) < $self->{length}, @words;
+        return grep length( $_ ) <= $length, @words;
     }
     else
     {
-        return grep length( $_ ) == $self->{length}, @words;
+        return grep length( $_ ) == $length, @words;
     }
 }
 
@@ -63,9 +66,12 @@ sub substring
 sub permute
 {
     my $self = shift;
+    my $length = shift;
+
+    return unless $length;
+    return if $length > length( $self->{word} );
     my $permutee = $self->{word};
     my @letters = split //, $permutee;
-    my $length = $self->{length} || scalar @letters;
     my $p = new Algorithm::Permute( \@letters, $length );
     return unless $p;
     my %done;
@@ -73,6 +79,14 @@ sub permute
     while ( my $word = join( '', $p->next ) ) 
     {
         push( @words, $word ) if $self->{words_hash}{$word} && ! $done{$word}++;
+    }
+    if ( $self->{mode} eq '<=' )
+    {
+        push( @words, $self->permute( $length-1 ) );
+    }
+    if ( $self->{mode} eq '>=' )
+    {
+        push( @words, $self->permute( $length+1 ) );
     }
     return @words;
 }
@@ -108,7 +122,8 @@ sub words
     }
     elsif ( $self->{type} eq 'p' ) # permute
     {
-        return $self->permute();
+        my $length = $self->{length} || length( $self->{word} );
+        return $self->permute( $length );
     }
     elsif ( $self->{type} eq 'a' ) # anagram
     {
@@ -128,10 +143,8 @@ sub psgi_app
     return sub {
         my $req = Plack::Request->new( shift );
         $self->{type} = $req->param( 't' );
-        warn "type: $self->{type}";
         $self->{mode} = $req->param( 'm' ) || '=';
         $self->{length} = $req->param( 'l' );
-        warn "length: $self->{length}";
         $self->{word} = $req->param( 'w' );
         my $code = 200;
         my $res = $req->new_response( $code );
@@ -141,7 +154,6 @@ sub psgi_app
         my $output = '';
         @{$self->{words}} = $self->words();
         $self->{type} ||= "anagram";
-        warn "words: @{$self->{words}}";
         $template->process( $input, $self , \$output ) || die $template->error();
         my $body = join( '', $output );
         $res->body( "<body>$body</body>" );
@@ -191,9 +203,9 @@ function setSelects() {
                 <label class="col-md-1 control-label" for="length">Length</label>
                 <div class="col-md-1">
                     <select class="form-control" id="mode" name="m" />
-                        <option value="&lt;">&lt;</option>
+                        <option value="&lt;=">&lt;=</option>
                         <option value="=">=</option>
-                        <option value="&gt;">&gt;</option>
+                        <option value="&gt;=">&gt;=</option>
                     </select>
                 </div>
                 <div class="col-md-2">
