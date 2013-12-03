@@ -12,7 +12,6 @@ my $length = shift;
 
 die "option must be one of (r|s|p|a)" unless defined $type and $type =~ /^(r|s|p|a)$/;
 
-warn "length => $length";
 my $scrabble = new Scrabble( length => $length, type => $type, word => $word );
 my @words = $scrabble->words();
 print map "$_\n", @words;
