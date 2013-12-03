@@ -180,7 +180,8 @@ function setSelects() {
         </script>
     </head>
     <body onload="setSelects()">
-    <h2>Ave's Scrabble Cheat</h2>
+    <div class="container">
+    <h2>Scrabble Cheat</h2>
         <form class="form-horizontal" role="form">
             <div class="form-group">
                 <label class="col-md-1 control-label" for="type">Type</label>
@@ -220,6 +221,7 @@ function setSelects() {
         </form>
         <pre>[% FOREACH word IN words %][% word %]
 [% END %]</pre>
+        </div>
     </body>
 </html>
 
