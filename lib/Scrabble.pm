@@ -23,70 +23,30 @@ sub new
     return $self;
 }
 
-sub filter_length
-{
-    my $self = shift;
-    my @words = @_;
-    my $mode = $self->{mode} || '=';
-    my $length =  $self->{length};
-    return @words unless defined( $length );
-    return @words unless $length =~ /^\d$/;
-    warn "mode: $mode";
-
-    if ( $mode eq '>=' )
-    {
-        return grep length( $_ ) >= $length, @words;
-    }
-    elsif ( $mode eq '<=' )
-    {
-        return grep length( $_ ) <= $length, @words;
-    }
-    else
-    {
-        return grep length( $_ ) == $length, @words;
-    }
-}
-
 sub regex
 {
     my $self = shift;
     my $regex = $self->{word};
     my @words = grep s/($regex)/uc($1)/e, @{$self->{words_list}};
-    return $self->filter_length( @words );
-}
-
-sub substring
-{
-    my $self = shift;
-    my $substring = $self->{word};
-    my @words = grep s/($substring)/uc($1)/e, @{$self->{words_list}};
-    return $self->filter_length( @words );
 }
 
 sub permute
 {
     my $self = shift;
-    my $length = shift;
 
-    return unless $length;
-    return if $length > length( $self->{word} );
     my $permutee = $self->{word};
+    return unless $permutee;
     my @letters = split //, $permutee;
-    my $p = new Algorithm::Permute( \@letters, $length );
-    return unless $p;
     my %done;
     my @words;
-    while ( my $word = join( '', $p->next ) ) 
+    for ( my $l = 1; $l <= @letters; $l++ )
     {
-        push( @words, $word ) if $self->{words_hash}{$word} && ! $done{$word}++;
-    }
-    if ( $self->{mode} eq '<=' )
-    {
-        push( @words, $self->permute( $length-1 ) );
-    }
-    if ( $self->{mode} eq '>=' )
-    {
-        push( @words, $self->permute( $length+1 ) );
+        my $p = new Algorithm::Permute( \@letters, $l );
+        return unless $p;
+        while ( my $word = join( '', $p->next ) ) 
+        {
+            push( @words, $word ) if $self->{words_hash}{$word} && ! $done{$word}++;
+        }
     }
     return @words;
 }
@@ -101,7 +61,6 @@ sub anagram
     {
         @words = grep s/($letter)/uc($1)/e, @words;
     }
-    return $self->filter_length( @words );
 }
 
 sub words
@@ -116,14 +75,9 @@ sub words
     {
         return $self->regex();
     }
-    elsif ( $self->{type} eq 's' ) # substring
-    {
-        return $self->substring();
-    }
     elsif ( $self->{type} eq 'p' ) # permute
     {
-        my $length = $self->{length} || length( $self->{word} );
-        return $self->permute( $length );
+        return $self->permute();
     }
     elsif ( $self->{type} eq 'a' ) # anagram
     {
@@ -142,9 +96,7 @@ sub psgi_app
 
     return sub {
         my $req = Plack::Request->new( shift );
-        $self->{type} = $req->param( 't' );
-        $self->{mode} = $req->param( 'm' ) || '=';
-        $self->{length} = $req->param( 'l' );
+        $self->{type} = $req->param( 't' ) || 'p';
         $self->{word} = $req->param( 'w' );
         my $code = 200;
         my $res = $req->new_response( $code );
@@ -153,7 +105,6 @@ sub psgi_app
         my $input = $self->section_data( "html" );
         my $output = '';
         @{$self->{words}} = $self->words();
-        $self->{type} ||= "anagram";
         $template->process( $input, $self , \$output ) || die $template->error();
         my $body = join( '', $output );
         $res->body( "<body>$body</body>" );
@@ -190,27 +141,13 @@ function setSelects() {
                         <option value="p">Permute</option>
                         <option value="r">Regex</option>
                         <option value="a">Anagram</option>
-                        <option value="s">Substring</option>
                     </select>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-md-1 control-label" for="word">Word</label>
+                <label class="col-md-1 control-label" for="word">Letters</label>
                 <div class="col-md-3">
-                    <input type="text" class="form-control" name="w" id="word" placeholder="type word here" value="[% word %]" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-md-1 control-label" for="length">Length</label>
-                <div class="col-md-1">
-                    <select class="form-control" id="mode" name="m" />
-                        <option value="&lt;=">&lt;=</option>
-                        <option value="=">=</option>
-                        <option value="&gt;=">&gt;=</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <input type="text" class="form-control" name="l" id="length" placeholder="type length here" value="[% length %]" />
+                    <input type="text" class="form-control" name="w" id="word" placeholder="type letters here" value="[% word %]" />
                 </div>
             </div>
             <div class="form-group">
