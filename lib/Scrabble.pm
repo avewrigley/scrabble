@@ -11,6 +11,35 @@ use Template;
 use strict;
 use warnings;
 
+my %value = (
+    A => 1,
+    B => 3,
+    C => 3,
+    D => 2,
+    E => 1,
+    F => 4,
+    G => 2,
+    H => 4,
+    I => 1,
+    J => 8,
+    K => 5,
+    L => 1,
+    M => 3,
+    N => 1,
+    O => 1,
+    P => 3,
+    Q => 10,
+    R => 1,
+    S => 1,
+    T => 1,
+    U => 1,
+    V => 4,
+    W => 4,
+    X => 8,
+    Y => 4,
+    Z => 10,
+);
+
 sub new
 {
     my $class = shift;
@@ -28,6 +57,7 @@ sub regex
     my $self = shift;
     my $regex = $self->{word};
     my @words = grep s/($regex)/uc($1)/e, @{$self->{words_list}};
+    return @words;
 }
 
 sub permute
@@ -61,6 +91,7 @@ sub anagram
     {
         @words = grep s/($letter)/uc($1)/e, @words;
     }
+    return @words;
 }
 
 sub words
@@ -90,6 +121,18 @@ sub words
     }
 }
 
+sub calculate_value
+{
+    my $word = shift;
+    my $value = 0;
+    my @letters = split //, $word;
+    for my $letter ( @letters )
+    {
+        $value += $value{uc $letter};
+    }
+    return $value;
+}
+
 sub psgi_app
 {
     my $self = shift;
@@ -104,8 +147,8 @@ sub psgi_app
         my $template = Template->new();
         my $input = $self->section_data( "html" );
         my $output = '';
-        @{$self->{words}} = $self->words();
-        $template->process( $input, $self , \$output ) || die $template->error();
+        $self->{words} = [ map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, sort { length( $a ) <=> length( $b ) } $self->words() ];
+        $template->process( $input, $self, \$output ) || die $template->error();
         my $body = join( '', $output );
         $res->body( "<body>$body</body>" );
         return $res->finalize;
@@ -126,38 +169,52 @@ __[ html ]__
         <script>
 function setSelects() {
     document.forms[0].t.value = "[% type %]"; 
-    document.forms[0].m.value = "[% mode %]"; 
 }
         </script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45771660-3', 'scrabblecheat.org.uk');
+  ga('send', 'pageview');
+
+</script>
     </head>
     <body onload="setSelects()">
-    <div class="container">
-    <h2>Scrabble Cheat</h2>
-        <form class="form-horizontal" role="form">
-            <div class="form-group">
-                <label class="col-md-1 control-label" for="type">Type</label>
-                <div class="col-md-3">
-                    <select class="form-control" id="type" name="t" />
-                        <option value="p">Permute</option>
-                        <option value="r">Regex</option>
-                        <option value="a">Anagram</option>
-                    </select>
+        <div class="container">
+            <h2>Scrabble Cheat</h2>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label class="col-md-1 control-label" for="type">Type</label>
+                    <div class="col-md-3">
+                        <select class="form-control" id="type" name="t" />
+                            <option value="p">Permute</option>
+                            <option value="r">Regex</option>
+                            <option value="a">Anagram</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label class="col-md-1 control-label" for="word">Letters</label>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" name="w" id="word" placeholder="type letters here" value="[% word %]" />
+                <div class="form-group">
+                    <label class="col-md-1 control-label" for="word">Letters</label>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="w" id="word" placeholder="type letters here" value="[% word %]" />
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-default">Submit</button>
+                <div class="form-group">
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-default">Submit</button>
+                    </div>
                 </div>
-            </div>
-        </form>
-        <pre>[% FOREACH word IN words %][% word %]
-[% END %]</pre>
+            </form>
+            [% IF words.size %]
+            <table class="table">
+                <tr><th>Word</th><th>Length</th><th>Value</th></tr>
+                [% FOREACH word IN words %]
+                    <tr><td>[% word.w %]</td><td>[% word.l %]</td><td>[% word.v %]</td></tr>
+                [% END %]
+            [% END %]
         </div>
     </body>
 </html>
