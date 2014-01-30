@@ -8,6 +8,11 @@ use Algorithm::Permute;
 use Plack::Request;
 use Template;
 
+use Log::Any qw( $log );
+use Log::Dispatch;
+use Log::Dispatch::FileRotate;
+use Log::Any::Adapter;
+
 use strict;
 use warnings;
 
@@ -40,15 +45,36 @@ my %value = (
     Z => 10,
 );
 
+my $logfile = '/var/log/scrabble/scrabble.log';
+
+my $dispatcher = Log::Dispatch->new(
+    callbacks  => sub {
+        my %args = @_;
+        my $message = $args{message};
+        return "$$: " . uc( $args{level} ) . ": " . scalar( localtime ) . ": $message";
+    }
+);
+
+Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
+
+$dispatcher->add(
+    my $file = Log::Dispatch::FileRotate->new(
+        name            => 'logfile',
+        min_level       => 'debug',
+        filename        => $logfile,
+        mode            => 'append' ,
+        DatePattern     => 'yyyy-MM-dd',
+        max             => 7,
+        newline         => 1,
+    ),
+);
+
 sub new
 {
     my $class = shift;
+    $log->debug( "new $class" );
     my %args = @_;
     my $self = bless \%args, $class;
-    my $words = $self->section_data( "words" );
-    @{$self->{words_list}} = split( /\n/, $$words );
-    chomp( @{$self->{words_list}} );
-    %{$self->{words_hash}} = map { $_ => 1 } @{$self->{words_list}};
     return $self;
 }
 
@@ -139,8 +165,15 @@ sub psgi_app
 
     return sub {
         my $req = Plack::Request->new( shift );
+        $log->debug( "load words" );
+        my $words = $self->section_data( "words" );
+        @{$self->{words_list}} = split( /\n/, $$words );
+        $log->debug( scalar( @{$self->{words_list}} ) . " words loaded" );
+        chomp( @{$self->{words_list}} );
+        %{$self->{words_hash}} = map { $_ => 1 } @{$self->{words_list}};
         $self->{type} = $req->param( 't' ) || 'p';
         $self->{word} = $req->param( 'w' );
+        $log->debug( "$self->{type} $self->{word}" );
         my $code = 200;
         my $res = $req->new_response( $code );
         $res->content_type( "text/html" );
@@ -148,9 +181,12 @@ sub psgi_app
         my $input = $self->section_data( "html" );
         my $output = '';
         $self->{words} = [ map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, sort { length( $a ) <=> length( $b ) } $self->words() ];
+        $log->debug( scalar( @{$self->{words}} ), " words found" );
         $template->process( $input, $self, \$output ) || die $template->error();
         my $body = join( '', $output );
         $res->body( "<body>$body</body>" );
+        $self->{words_list} = [];
+        $self->{words_hash} = {};
         return $res->finalize;
     };
 }
