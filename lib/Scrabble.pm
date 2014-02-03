@@ -83,7 +83,7 @@ sub regex
     my $self = shift;
     my $regex = $self->{word};
     my @words = grep s/($regex)/uc($1)/e, @{$self->{words_list}};
-    return @words;
+    return sort { length( $a ) <=> length( $b ) } @words;
 }
 
 sub permute
@@ -104,7 +104,7 @@ sub permute
             push( @words, $word ) if $self->{words_hash}{$word} && ! $done{$word}++;
         }
     }
-    return @words;
+    return sort { length( $b ) <=> length( $a ) } @words;
 }
 
 sub anagram
@@ -117,7 +117,7 @@ sub anagram
     {
         @words = grep s/($letter)/uc($1)/e, @words;
     }
-    return @words;
+    return sort { length( $a ) <=> length( $b ) } @words;
 }
 
 sub words
@@ -180,7 +180,7 @@ sub psgi_app
         my $template = Template->new();
         my $input = $self->section_data( "html" );
         my $output = '';
-        $self->{words} = [ map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, sort { length( $a ) <=> length( $b ) } $self->words() ];
+        $self->{words} = [ map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, $self->words() ];
         $log->debug( scalar( @{$self->{words}} ), " words found" );
         $template->process( $input, $self, \$output ) || die $template->error();
         my $body = join( '', $output );
