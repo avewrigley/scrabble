@@ -5,7 +5,6 @@ package Scrabble;
 use File::Slurp;
 use Data::Section -setup;
 use Algorithm::Permute;
-use Plack::Request;
 use Template;
 
 use Log::Any qw( $log );
@@ -72,9 +71,15 @@ $dispatcher->add(
 sub new
 {
     my $class = shift;
-    $log->debug( "new $class" );
     my %args = @_;
     my $self = bless \%args, $class;
+    $self->{type} ||= 'p';
+    my $words = $self->section_data( "words" );
+    @{$self->{words_list}} = split( /\n/, $$words );
+    $log->debug( scalar( @{$self->{words_list}} ) . " words loaded" );
+    chomp( @{$self->{words_list}} );
+    %{$self->{words_hash}} = map { $_ => 1 } @{$self->{words_list}};
+    $log->debug( "$self->{type} $self->{word}" );
     return $self;
 }
 
@@ -128,23 +133,37 @@ sub words
         warn "no type";
         return;
     }
+    my @words;
     if ( $self->{type} eq 'r' ) # regex
     {
-        return $self->regex();
+        @words = $self->regex();
     }
     elsif ( $self->{type} eq 'p' ) # permute
     {
-        return $self->permute();
+        @words = $self->permute();
     }
     elsif ( $self->{type} eq 'a' ) # anagram
     {
-        return $self->anagram();
+        @words = $self->anagram();
     }
     else
     {
         warn "unknown type $self->{type}";
-        return;
     }
+    @words = map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, @words;
+    $log->debug( scalar( @words ), " words found - ", join( ",", map $_->{w},  @words ) );
+    return @words;
+}
+
+sub render_html
+{
+    my $self = shift;
+    my @words = @_;
+    my $template = Template->new();
+    my $input = $self->section_data( "html" );
+    my $output = '';
+    $template->process( $input, { %$self, words => \@words }, \$output ) || die $template->error();
+    return join( '', $output );
 }
 
 sub calculate_value
@@ -158,40 +177,6 @@ sub calculate_value
     }
     return $value;
 }
-
-sub psgi_app
-{
-    my $self = shift;
-
-    return sub {
-        my $req = Plack::Request->new( shift );
-        $log->debug( "load words" );
-        my $words = $self->section_data( "words" );
-        @{$self->{words_list}} = split( /\n/, $$words );
-        $log->debug( scalar( @{$self->{words_list}} ) . " words loaded" );
-        chomp( @{$self->{words_list}} );
-        %{$self->{words_hash}} = map { $_ => 1 } @{$self->{words_list}};
-        $self->{type} = $req->param( 't' ) || 'p';
-        $self->{word} = $req->param( 'w' );
-        $log->debug( "$self->{type} $self->{word}" );
-        my $code = 200;
-        my $res = $req->new_response( $code );
-        $res->content_type( "text/html" );
-        my $template = Template->new();
-        my $input = $self->section_data( "html" );
-        my $output = '';
-        $self->{words} = [ map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, $self->words() ];
-        $log->debug( scalar( @{$self->{words}} ), " words found" );
-        $template->process( $input, $self, \$output ) || die $template->error();
-        my $body = join( '', $output );
-        $res->body( "<body>$body</body>" );
-        $self->{words_list} = [];
-        $self->{words_hash} = {};
-        return $res->finalize;
-    };
-}
-
-1;
 
 __DATA__
 __[ html ]__
