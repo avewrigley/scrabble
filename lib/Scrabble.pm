@@ -3,7 +3,6 @@ package Scrabble;
 # ABSTRACT: simple scrabble tools
 
 use File::Slurp;
-use Algorithm::Permute;
 use Template;
 
 use Log::Any qw( $log );
@@ -98,17 +97,12 @@ sub permute
 
     my $permutee = $self->{word};
     return unless $permutee;
-    my @letters = split //, $permutee;
-    my %done;
+    my $c1 = join '', sort split //, $permutee;
     my @words;
-    for ( my $l = 1; $l <= @letters; $l++ )
+    for my $word (  @{$self->{words_list}} )
     {
-        my $p = new Algorithm::Permute( \@letters, $l );
-        return unless $p;
-        while ( my $word = join( '', $p->next ) ) 
-        {
-            push( @words, $word ) if $self->{words_hash}{$word} && ! $done{$word}++;
-        }
+        my $c2 = join '', sort split //, $word;
+        push( @words, $word ) if $c1 =~ /$c2/;
     }
     return sort { length( $b ) <=> length( $a ) } @words;
 }
@@ -129,6 +123,7 @@ sub anagram
 sub words
 {
     my $self = shift;
+    $log->debug( "get words" );
     unless ( $self->{type} )
     {
         warn "no type";
