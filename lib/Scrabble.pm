@@ -101,7 +101,7 @@ sub permute
     my @words;
     for my $word (  @{$self->{words_list}} )
     {
-        my $c2 = join '', sort split //, $word;
+        my $c2 = join '.*', sort split //, $word;
         push( @words, $word ) if $c1 =~ /$c2/;
     }
     return sort { length( $b ) <=> length( $a ) } @words;
