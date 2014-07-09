@@ -74,10 +74,9 @@ sub new
     $self->{type} ||= 'p';
     my @words = read_file( $self->{word_file} );
     $log->debug( "load word list from $self->{word_file}" );
-    $self->{words_list} = \@words;
+    $self->{words_list} = [ map lc( $_ ), @words ];
     $log->debug( scalar( @{$self->{words_list}} ) . " words loaded" );
     chomp( @{$self->{words_list}} );
-    %{$self->{words_hash}} = map { $_ => 1 } @{$self->{words_list}};
     $log->debug( "type: $self->{type}" ) if $self->{type};
     $log->debug( "word: $self->{word}" ) if $self->{word};
     return $self;
