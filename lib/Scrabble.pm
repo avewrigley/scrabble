@@ -72,6 +72,7 @@ sub new
     my %args = @_;
     my $self = bless \%args, $class;
     $self->{type} ||= 'p';
+    $self->{word} = lc( $self->{word} );
     my @words = read_file( $self->{word_file} );
     $log->debug( "load word list from $self->{word_file}" );
     $self->{words_list} = [ map lc( $_ ), @words ];
