@@ -51,7 +51,7 @@ function setSelects() {
             <table class="table">
                 <tr><th>Word</th><th>Length</th><th>Value</th></tr>
                 [% FOREACH word IN words %]
-                    <tr><td>[% word.w %]</td><td>[% word.l %]</td><td>[% word.v %]</td></tr>
+                    <tr><td><a href="http://en.wiktionary.org/wiki/[% word.w %]">[% word.w %]</a></td><td>[% word.l %]</td><td>[% word.v %]</td></tr>
                 [% END %]
             [% END %]
         </div>
