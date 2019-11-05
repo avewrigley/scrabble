@@ -4,6 +4,7 @@ package Scrabble;
 
 use File::Slurp;
 use Template;
+use FindBin qw( $Bin );
 
 use Log::Any qw( $log );
 use Log::Dispatch;
@@ -42,7 +43,7 @@ my %value = (
     Z => 10,
 );
 
-my $logfile = '/var/log/scrabble/scrabble.log';
+my $logfile = "$Bin/logs/scrabble.log";
 
 my $dispatcher = Log::Dispatch->new(
     callbacks  => sub {
