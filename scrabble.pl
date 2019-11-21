@@ -1,4 +1,5 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
+#set filetype=perl
 
 use strict;
 use warnings;
