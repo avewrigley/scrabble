@@ -45,7 +45,7 @@ sub new
     my $self = bless \%args, $class;
     $self->{type} ||= 'p';
     $self->{word} = lc( $self->{word} );
-    my @words = read_file( $self->{word_file} );
+    my @words = map lc($_), read_file( $self->{word_file} );
     $self->{words_list} = [ map lc( $_ ), @words ];
     chomp( @{$self->{words_list}} );
     return $self;
