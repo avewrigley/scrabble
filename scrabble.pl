@@ -19,7 +19,11 @@ my $word_file = "$Bin/words.txt";
 
 die "option must be one of ([r]egex|[p]ermute|[a]nagram)" unless defined $opts{type} and $opts{type} =~ /^(r|p|a)/;
 
+my $scrabble = new Scrabble( word_file => $word_file, type => $opts{type}, word => $word );
+my $tb = Text::Table->new( "Word", "Length", "Score" );
 
-my $scrabble = new Scrabble( word_file => $word_file, length => $length, type => $type, word => $word );
-my @words = $scrabble->words();
-print map "$_->{w} $_->{l} $_->{v}\n", @words;
+for $word ( $scrabble->words() )
+{
+    $tb->add( $word->{w}, $word->{l}, $word->{v} );
+}
+print $tb;
