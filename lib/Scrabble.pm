@@ -6,11 +6,6 @@ use File::Slurp;
 use Template;
 use FindBin qw( $Bin );
 
-use Log::Any qw( $log );
-use Log::Dispatch;
-use Log::Dispatch::FileRotate;
-use Log::Any::Adapter;
-
 use strict;
 use warnings;
 
@@ -43,30 +38,6 @@ my %value = (
     Z => 10,
 );
 
-my $logfile = "$Bin/logs/scrabble.log";
-
-my $dispatcher = Log::Dispatch->new(
-    callbacks  => sub {
-        my %args = @_;
-        my $message = $args{message};
-        return "$$: " . uc( $args{level} ) . ": " . scalar( localtime ) . ": $message";
-    }
-);
-
-Log::Any::Adapter->set( 'Dispatch', dispatcher => $dispatcher );
-
-$dispatcher->add(
-    my $file = Log::Dispatch::FileRotate->new(
-        name            => 'logfile',
-        min_level       => 'debug',
-        filename        => $logfile,
-        mode            => 'append' ,
-        DatePattern     => 'yyyy-MM-dd',
-        max             => 7,
-        newline         => 1,
-    ),
-);
-
 sub new
 {
     my $class = shift;
@@ -75,12 +46,8 @@ sub new
     $self->{type} ||= 'p';
     $self->{word} = lc( $self->{word} );
     my @words = read_file( $self->{word_file} );
-    $log->debug( "load word list from $self->{word_file}" );
     $self->{words_list} = [ map lc( $_ ), @words ];
-    $log->debug( scalar( @{$self->{words_list}} ) . " words loaded" );
     chomp( @{$self->{words_list}} );
-    $log->debug( "type: $self->{type}" ) if $self->{type};
-    $log->debug( "word: $self->{word}" ) if $self->{word};
     return $self;
 }
 
@@ -124,7 +91,6 @@ sub anagram
 sub words
 {
     my $self = shift;
-    $log->debug( "get words" );
     unless ( $self->{type} )
     {
         warn "no type";
@@ -148,7 +114,6 @@ sub words
         warn "unknown type $self->{type}";
     }
     @words = map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, @words;
-    $log->debug( scalar( @words ), " words found - ", join( ",", map $_->{w},  @words ) );
     return @words;
 }
 
