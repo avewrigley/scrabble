@@ -65,12 +65,15 @@ sub permute
 
     my $permutee = $self->{word};
     return unless $permutee;
-    my $c1 = join '', sort split //, $permutee;
+    my $c1 = join '', map $_ . '?', sort split //, $permutee;
     my @words;
-    for my $word (  @{$self->{words_list}} )
+    for my $word ( @{$self->{words_list}} )
     {
-        my $c2 = join '.*', sort split //, $word;
-        push( @words, $word ) if $c1 =~ /$c2/;
+        my $c2 = join '', sort split //, $word;
+        if ( $c2 =~ /^$c1$/ )
+        {
+            push( @words, $word ) 
+        }
     }
     return sort { length( $b ) <=> length( $a ) } @words;
 }
