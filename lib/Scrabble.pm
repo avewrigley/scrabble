@@ -97,15 +97,15 @@ sub words
         return;
     }
     my @words;
-    if ( $self->{type} eq 'r' ) # regex
+    if ( $self->{type} =~ /^r/ ) # regex
     {
         @words = $self->regex();
     }
-    elsif ( $self->{type} eq 'p' ) # permute
+    elsif ( $self->{type} =~ /^p/ ) # permute
     {
         @words = $self->permute();
     }
-    elsif ( $self->{type} eq 'a' ) # anagram
+    elsif ( $self->{type} =~ /^a/ ) # anagram
     {
         @words = $self->anagram();
     }
