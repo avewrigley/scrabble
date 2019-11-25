@@ -1,1 +1,1 @@
-sudo plackup app.psgi
+plackup app.psgi
