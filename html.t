@@ -53,6 +53,7 @@ function setSelects() {
                 [% FOREACH word IN words %]
                     <tr><td><a href="http://en.wiktionary.org/wiki/[% word.w %]">[% word.w %]</a></td><td>[% word.l %]</td><td>[% word.v %]</td></tr>
                 [% END %]
+            </table>
             [% END %]
         </div>
     </body>
