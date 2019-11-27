@@ -22,8 +22,11 @@ die "option must be one of ([r]egex|[p]ermute|[a]nagram)" unless defined $opts{t
 my $scrabble = new Scrabble( word_file => $word_file, type => $opts{type}, word => $word );
 my $tb = Text::Table->new( "Word", "Length", "Score" );
 
+my $nwords = 0;
 for $word ( $scrabble->words() )
 {
-    $tb->add( $word->{w}, $word->{l}, $word->{v} );
+    $tb->add( $word->{word}, $word->{len}, $word->{val} );
+    $nwords++;
 }
 print $tb;
+print "\n$nwords results\n\n";

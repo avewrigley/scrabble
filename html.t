@@ -7,7 +7,7 @@
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
         <script>
 function setSelects() {
-    document.forms[0].t.value = "[% type %]"; 
+    document.forms[0].type.value = "[% type %]"; 
 }
         </script>
 <script>
@@ -28,17 +28,17 @@ function setSelects() {
                 <div class="form-group">
                     <label class="col-md-1 control-label" for="type">Type</label>
                     <div class="col-md-3">
-                        <select class="form-control" id="type" name="t" />
-                            <option value="p">Permute</option>
-                            <option value="r">Regex</option>
-                            <option value="a">Anagram</option>
+                        <select class="form-control" id="type" name="type" />
+                            <option value="permute">Permute</option>
+                            <option value="regex">Regex</option>
+                            <option value="anagram">Anagram</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-md-1 control-label" for="word">Letters</label>
                     <div class="col-md-3">
-                        <input type="text" class="form-control" name="w" id="word" placeholder="type letters here" value="[% word %]" />
+                        <input type="text" class="form-control" name="word" id="word" placeholder="type letters here" value="[% word %]" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -51,7 +51,7 @@ function setSelects() {
             <table class="table">
                 <tr><th>Word</th><th>Length</th><th>Value</th></tr>
                 [% FOREACH word IN words %]
-                    <tr><td><a href="http://en.wiktionary.org/wiki/[% word.w %]">[% word.w %]</a></td><td>[% word.l %]</td><td>[% word.v %]</td></tr>
+                    <tr><td><a href="http://en.wiktionary.org/wiki/[% word.word %]">[% word.word %]</a></td><td>[% word.len %]</td><td>[% word.val %]</td></tr>
                 [% END %]
             </table>
             [% END %]

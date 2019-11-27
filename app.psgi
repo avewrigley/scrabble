@@ -13,8 +13,8 @@ my $template_file = "$Bin/html.t";
 sub {
     my $req = Plack::Request->new( shift );
     my $code = 200;
-    my $type = $req->param( 't' );
-    my $word = $req->param( 'w' );
+    my $type = $req->param( 'type' );
+    my $word = $req->param( 'word' );
     my $res = $req->new_response( $code );
     $res->content_type( "text/html" );
     return $res->finalize unless $req->path eq '/';

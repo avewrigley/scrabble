@@ -46,6 +46,7 @@ sub new
     $self->{type} ||= 'p';
     $self->{word} = lc( $self->{word} );
     my @words = map lc($_), read_file( $self->{word_file} );
+    warn scalar(@words), " words";
     $self->{words_list} = [ map lc( $_ ), @words ];
     chomp( @{$self->{words_list}} );
     return $self;
@@ -116,7 +117,7 @@ sub words
     {
         warn "unknown type $self->{type}";
     }
-    @words = map { w => $_, l => length( $_ ), v => calculate_value( $_ ) }, @words;
+    @words = map { word => $_, len => length( $_ ), val => calculate_value( $_ ) }, @words;
     return @words;
 }
 
