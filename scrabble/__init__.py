@@ -6,7 +6,6 @@ word_file = "words.txt"
 with open(word_file) as x:
     words = list(map(lambda w: w.rstrip().lower(), x.readlines()))
 
-
 value = {
     'A': 1,
     'B': 3,
@@ -74,8 +73,10 @@ def permute(word):
 
 def anagram(word):
     results = []
+    pat = '.*'.join(sorted(word))
     for w in words:
-        if re.search(''.join(sorted(word)), ''.join(sorted(w))):
+        sw = ''.join(sorted(w))
+        if re.search(pat, sw):
             for l in word:
                 p = re.compile('('+l+')')
                 w = p.sub(lambda pat: pat.group(1).upper(), w, 1)
