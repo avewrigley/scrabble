@@ -18,6 +18,7 @@ elif args.type == "regex":
     results = scrabble.regex(args.word)
 else:
     results = scrabble.permute(args.word)
+results = list(results)
 template = '''
 word\tlen\tval
 ====\t===\t===
@@ -25,5 +26,9 @@ word\tlen\tval
 {{#results}}
 {{word}}\t{{len}}\t{{val}}
 {{/results}}
+
+{{nresults}} results
 '''
-print(pystache.render(template, {"results": results}))
+print(
+    pystache.render(template, {"results": results, "nresults": len(results)})
+)
