@@ -57,7 +57,8 @@ sub regex
     my $self = shift;
     my $regex = $self->{word};
     my @words = grep s/($regex)/uc($1)/e, @{$self->{words_list}};
-    return sort { length( $a ) <=> length( $b ) } @words;
+    my @sorted = sort { length( $a ) <=> length( $b ) } @words;
+    return @sorted;
 }
 
 sub permute
@@ -76,7 +77,8 @@ sub permute
             push( @words, $word ) 
         }
     }
-    return sort { length( $b ) <=> length( $a ) } @words;
+    my @sorted = sort { length( $b ) <=> length( $a ) } @words;
+    return @sorted;
 }
 
 sub anagram
@@ -89,7 +91,8 @@ sub anagram
     {
         @words = grep s/($letter)/uc($1)/e, @words;
     }
-    return sort { length( $a ) <=> length( $b ) } @words;
+    my @sorted = sort { length( $a ) <=> length( $b ) } @words;
+    return @sorted;
 }
 
 sub words

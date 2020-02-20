@@ -1,11 +1,11 @@
+use strict;
+use warnings;
+
 use Plack::Request;
 use FindBin qw( $Bin );
 
 use lib "$Bin/lib";
 use Scrabble;
-
-use strict;
-use warnings;
 
 my $word_file = "$Bin/words.txt";
 my $template_file = "$Bin/html.t";

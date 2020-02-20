@@ -23,7 +23,7 @@ my $scrabble = new Scrabble( word_file => $word_file, type => $opts{type}, word 
 my $tb = Text::Table->new( "Word", "Length", "Score" );
 
 my $nwords = 0;
-for $word ( $scrabble->words() )
+for my $word ( $scrabble->words() )
 {
     $tb->add( $word->{word}, $word->{len}, $word->{val} );
     $nwords++;
