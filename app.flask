@@ -19,6 +19,7 @@ args = parser.parse_args()
 def run():
     word = request.args.get("word")
     word = word if word else ''
+    word = word.lower()
     type = request.args.get("type")
     type = type if type else 'permute'
     results = []

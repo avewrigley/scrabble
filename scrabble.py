@@ -12,12 +12,13 @@ parser.add_argument(
     help='type of guess (anagram|permute|regex)'
 )
 args = parser.parse_args()
+word = args.word.lower()
 if args.type == "anagram":
-    results = scrabble.anagram(args.word)
+    results = scrabble.anagram(word)
 elif args.type == "regex":
-    results = scrabble.regex(args.word)
+    results = scrabble.regex(word)
 else:
-    results = scrabble.permute(args.word)
+    results = scrabble.permute(word)
 results = list(results)
 template = '''
 word\tlen\tval
