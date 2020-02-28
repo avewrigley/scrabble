@@ -107,6 +107,9 @@ def main():
     """
     parser = argparse.ArgumentParser(description='Cheat at scrabble.')
     parser.add_argument('word')
+    parser.add_argument( '--anagram', action='store_true', help='set type to anagram')
+    parser.add_argument( '--permute', action='store_true', help='set type to permute')
+    parser.add_argument( '--regex', action='store_true', help='set type to regex')
     parser.add_argument(
         '--type',
         choices=['anagram', 'permute', 'regex'],
@@ -114,11 +117,13 @@ def main():
     )
     args = parser.parse_args()
     word = args.word.lower()
-    if args.type == "anagram":
+    if args.anagram or args.type == "anagram":
         results = anagram(word)
-    elif args.type == "regex":
+    elif args.regex or args.type == "regex":
         results = regex(word)
-    else:
+    elif args.permute or args.type == "permute":
+        results = permute(word)
+    else: # default to permute
         results = permute(word)
     results = list(results)
     template = '''
