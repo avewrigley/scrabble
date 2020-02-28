@@ -46,7 +46,6 @@ sub new
     $self->{type} ||= 'p';
     $self->{word} = lc( $self->{word} );
     my @words = map lc($_), read_file( $self->{word_file} );
-    warn scalar(@words), " words";
     $self->{words_list} = [ map lc( $_ ), @words ];
     chomp( @{$self->{words_list}} );
     return $self;
