@@ -120,6 +120,10 @@ sub words
         warn "unknown type $self->{type}";
     }
     @words = map { word => $_, len => length( $_ ), val => calculate_value( $_ ) }, @words;
+    if ( exists $self->{limit} )
+    {
+        $#words = $self->{limit}-1 if $#words > $self->{limit}-1
+    }
     return @words;
 }
 
