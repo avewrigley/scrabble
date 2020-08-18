@@ -52,7 +52,8 @@ def calculate_value(letter_list):
 
 def map_results(results):
     """
-    map a list of result words to a list of dictionaries keyed on word, len, and val
+    map a list of result words to a list of dictionaries keyed on word, len,
+    and val
     """
     return map(
         lambda w: {
@@ -101,15 +102,23 @@ def anagram(letter_list):
                 word = pattern.sub(lambda pat: pat.group(1).upper(), word, 1)
             results.append(word)
     return map_results(sorted(results, key=len, reverse=False))
+
+
 def main():
     """
     main
     """
     parser = argparse.ArgumentParser(description='Cheat at scrabble.')
     parser.add_argument('word')
-    parser.add_argument( '--anagram', action='store_true', help='set type to anagram')
-    parser.add_argument( '--permute', action='store_true', help='set type to permute')
-    parser.add_argument( '--regex', action='store_true', help='set type to regex')
+    parser.add_argument(
+        '--anagram', action='store_true', help='set type to anagram'
+    )
+    parser.add_argument(
+        '--permute', action='store_true', help='set type to permute'
+    )
+    parser.add_argument(
+        '--regex', action='store_true', help='set type to regex'
+    )
     parser.add_argument(
         '--type',
         choices=['anagram', 'permute', 'regex'],
@@ -123,7 +132,7 @@ def main():
         results = regex(word)
     elif args.permute or args.type == "permute":
         results = permute(word)
-    else: # default to permute
+    else:  # default to permute
         results = permute(word)
     results = list(results)
     template = '''
@@ -136,7 +145,11 @@ word\tlen\tval
 
 {{nresults}} results
 '''
-    print(pystache.render(template, {"results": results, "nresults": len(results)}))
+    print(
+        pystache.render(
+            template, {"results": results, "nresults": len(results)}
+        )
+    )
 
 
 if __name__ == "__main__":
