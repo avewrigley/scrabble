@@ -16,6 +16,7 @@ my @opts = qw( type=s verbose anagram permute regex limit=i );
 GetOptions( \%opts, @opts ) or pod2usage( verbose => 0 );
 
 my $word = shift;
+exit unless length($word);
 my $word_file = "$Bin/words.txt";
 
 my $type = $opts{type};
